@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login - Party Planet</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gradient-to-b from-pink-100 to-white min-h-screen text-gray-800">
+  <header class="flex justify-between items-center p-6 bg-white shadow">
+    <div class="flex items-center space-x-2">
+      <span class="text-2xl">🎉</span>
+      <span class="text-2xl font-bold text-purple-600">Party Planet</span>
+    </div>
+    <nav class="space-x-6">
+      <a href="Main.html" class="font-medium hover:text-purple-600">Home</a>
+      <a href="Events.html" class="font-medium hover:text-purple-600">Events</a>
+      <a href="SignIn.html" class="font-medium hover:text-purple-600">Sign Up</a>
+    </nav>
+  </header>
+  <section class="py-12 px-6">
+    <div class="max-w-md mx-auto">
+      <h2 class="text-3xl font-extrabold text-gray-800 mb-6">Login</h2>
+      <form id="loginForm" @submit.prevent="login" class="bg-white p-6 rounded-2xl shadow">
+        <div class="mb-4">
+          <label class="block text-gray-700">Email</label>
+          <input v-model="user.email" type="email" class="w-full p-2 border rounded" required>
+        </div>
+        <div class="mb-4">
+          <label class="block text-gray-700">Password</label>
+          <input v-model="user.password" type="password" class="w-full p-2 border rounded" required>
+        </div>
+        <button type="submit" class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-full font-semibold w-full">Login</button>
+      </form>
+      <p class="mt-4 text-center">
+        Don't have an account? <a href="SignUp.html" class="text-purple-600 hover:underline">Sign Up</a>
+      </p>
+    </div>
+  </section>
+  <footer class="bg-gray-100 py-8 text-center text-gray-600">
+    <div class="max-w-4xl mx-auto px-4">
+      <div class="flex justify-center items-center mb-4">
+        <span class="text-purple-600 text-xl mr-2">🎉</span>
+        <span class="text-xl font-semibold">Party Planet</span>
+      </div>
+      <p class="mb-2">The ultimate event planning platform</p>
+      <div class="footer-links mb-4">
+        <a href="#" class="hover:text-purple-600">About</a>
+        <a href="#" class="hover:text-purple-600">Pricing</a>
+        <a href="#" class="hover:text-purple-600">Privacy</a>
+        <a href="#" class="hover:text-purple-600">Terms</a>
+      </div>
+      <p class="text-sm">Made with ♥ by Party Planet Team © 2025 Party Planet. All rights reserved.</p>
+    </div>
+  </footer>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  <script>
+    new Vue({
+      el: '#loginForm',
+      data: {
+        user: {
+          email: '',
+          password: ''
+        }
+      },
+      methods: {
+        login() {
+          if (!this.user.email || !this.user.password) {
+            console.log('Validation failed: Missing fields');
+            alert('Please fill all fields.');
+            return;
+          }
+          console.log('Sending login request:', this.user);
+          axios.post('http://localhost:5000/api/users/signin', this.user)
+            .then(response => {
+              console.log('Login response status:', response.status);
+              console.log('Login response data:', response.data);
+              alert('Logged in successfully!');
+              // Handle token if present
+              if (response.data && response.data.token) {
+                try {
+                  localStorage.setItem('token', response.data.token);
+                  console.log('Token stored in localStorage');
+                } catch (e) {
+                  console.error('localStorage error:', e);
+                }
+              } else {
+                console.log('No token in response, proceeding with redirect');
+              }
+              // Perform redirect
+              console.log('Attempting redirect to Main.html');
+              try {
+                window.location.href = 'Main.html';
+                console.log('window.location.href executed');
+                // Fallback redirect
+                setTimeout(() => {
+                  console.log('Falling back to window.location.assign');
+                  window.location.assign('Main.html');
+                }, 500);
+              } catch (e) {
+                console.error('Redirect error:', e);
+                alert('Redirect to Main page failed. Redirecting to Sign Up page.');
+                window.location.assign('SignUp.html');
+              }
+            })
+            .catch(error => {
+              console.error('Login error:', error);
+              if (error.response) {
+                console.log('Error response data:', error.response.data);
+                console.log('Error status:', error.response.status);
+              }
+              alert('Login failed. ' + (error.response?.data?.message || 'Please check your credentials.'));
+            });
+        }
+      }
+    });
+  </script>
+</body>
+</html>

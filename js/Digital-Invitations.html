@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Digital Invitations - Party Planet</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gradient-to-b from-pink-100 to-white min-h-screen text-gray-800">
+  <header class="flex justify-between items-center p-6 bg-white shadow">
+    <div class="flex items-center space-x-2">
+      <span class="text-2xl">🎉</span>
+      <span class="text-2xl font-bold text-purple-600">Party Planet</span>
+    </div>
+    <nav class="space-x-6">
+      <a href="Main.html" class="font-medium hover:text-purple-600">Home</a>
+      <a href="Events.html" class="font-medium hover:text-purple-600">Events</a>
+      <a href="Event-Planning.html" class="font-medium hover:text-purple-600">Event Planning</a>
+      <a href="RSVP-Management.html" class="font-medium hover:text-purple-600">RSVP Management</a>
+      <a href="SignIn.html" class="font-medium hover:text-purple-600">Sign In</a>
+      <a href="Login.html" class="font-medium hover:text-purple-600">Login</a>
+      <a href="CreateEvent.html" class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-full font-semibold">+ New Event</a>
+    </nav>
+  </header>
+  <section class="py-12 px-6">
+    <div class="max-w-6xl mx-auto">
+      <h2 class="text-3xl font-extrabold text-gray-800 mb-6">Digital Invitations</h2>
+      <div id="invitationContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div v-for="invitation in invitations" :key="invitation._id" class="bg-white p-6 rounded-2xl shadow">
+          <p>{{ invitation.event }} - {{ invitation.sent ? 'Sent' : 'Draft' }}</p>
+          <button @click="sendInvitation(invitation._id)" class="mt-2 bg-purple-500 hover:bg-purple-600 text-white px-2 py-1 rounded">Send</button>
+          <button @click="deleteInvitation(invitation._id)" class="mt-2 bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded ml-2">Delete</button>
+        </div>
+      </div>
+      <form @submit.prevent="addInvitation" class="mt-6 bg-white p-6 rounded-2xl shadow">
+        <div class="mb-4">
+          <label class="block text-gray-700">Event</label>
+          <input v-model="newInvitation.event" type="text" class="w-full p-2 border rounded" required>
+        </div>
+        <button type="submit" class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-full font-semibold">Add Invitation</button>
+      </form>
+    </div>
+  </section>
+  <footer class="bg-gray-100 py-8 text-center text-gray-600">
+    <div class="max-w-4xl mx-auto px-4">
+      <div class="flex justify-center items-center mb-4">
+        <span class="text-purple-600 text-xl mr-2">🎉</span>
+        <span class="text-xl font-semibold">Party Planet</span>
+      </div>
+      <p class="mb-2">The ultimate event planning platform</p>
+      <div class="footer-links mb-4">
+        <a href="#" class="hover:text-purple-600">About</a>
+        <a href="#" class="hover:text-purple-600">Pricing</a>
+        <a href="#" class="hover:text-purple-600">Privacy</a>
+        <a href="#" class="hover:text-purple-600">Terms</a>
+      </div>
+      <p class="text-sm">Made with ♥ by Party Planet Team © 2025 Party Planet. All rights reserved.</p>
+    </div>
+  </footer>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  <script>
+    new Vue({
+      el: '#invitationContainer',
+      data: {
+        invitations: [],
+        newInvitation: { event: '', sent: false }
+      },
+      mounted() {
+        this.fetchInvitations();
+      },
+      methods: {
+        fetchInvitations() {
+          axios.get('http://localhost:5000/api/invitations', { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } })
+            .then(response => {
+              this.invitations = response.data;
+            })
+            .catch(error => {
+              console.error('Error fetching invitations:', error);
+              alert('Failed to load invitations.');
+            });
+        },
+        addInvitation() {
+          axios.post('http://localhost:5000/api/invitations', this.newInvitation, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } })
+            .then(response => {
+              this.invitations.push(response.data);
+              this.newInvitation = { event: '', sent: false };
+              alert('Invitation added successfully!');
+            })
+            .catch(error => {
+              console.error('Error adding invitation:', error);
+              alert('Failed to add invitation.');
+            });
+        },
+        sendInvitation(invitationId) {
+          axios.put(`http://localhost:5000/api/invitations/${invitationId}/send`, {}, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } })
+            .then(response => {
+              const invitation = this.invitations.find(i => i._id === invitationId);
+              invitation.sent = true;
+              alert('Invitation sent successfully!');
+            })
+            .catch(error => {
+              console.error('Error sending invitation:', error);
+              alert('Failed to send invitation.');
+            });
+        },
+        deleteInvitation(invitationId) {
+          if (confirm('Are you sure you want to delete this invitation?')) {
+            axios.delete(`http://localhost:5000/api/invitations/${invitationId}`, { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } })
+              .then(() => {
+                this.invitations = this.invitations.filter(i => i._id !== invitationId);
+                alert('Invitation deleted successfully!');
+              })
+              .catch(error => {
+                console.error('Error deleting invitation:', error);
+                alert('Failed to delete invitation.');
+              });
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Create Event - Party Planet</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gradient-to-b from-pink-100 to-white min-h-screen text-gray-800">
+  <header class="flex justify-between items-center p-6 bg-white shadow">
+    <div class="flex items-center space-x-2">
+      <span class="text-2xl">🎉</span>
+      <span class="text-2xl font-bold text-purple-600">Party Planet</span>
+    </div>
+    <nav class="space-x-6">
+      <a href="Main.html" class="font-medium hover:text-purple-600">Home</a>
+      <a href="Events.html" class="font-medium hover:text-purple-600">Events</a>
+      <a href="Event-Planning.html" class="font-medium hover:text-purple-600">Event Planning</a>
+      <a href="Digital-Invitations.html" class="font-medium hover:text-purple-600">Invitations</a>
+      <a href="RSVP-Management.html" class="font-medium hover:text-purple-600">RSVP Management</a>
+      <a href="SignIn.html" class="font-medium hover:text-purple-600">Sign In</a>
+      <a href="Login.html" class="font-medium hover:text-purple-600">Login</a>
+    </nav>
+  </header>
+  <section class="py-12 px-6">
+    <div class="max-w-2xl mx-auto">
+      <h2 class="text-3xl font-extrabold text-gray-800 mb-6">Create New Event</h2>
+      <form id="createEventForm" @submit.prevent="createEvent" class="bg-white p-6 rounded-2xl shadow">
+        <div class="mb-4">
+          <label class="block text-gray-700">Event Title</label>
+          <input v-model="event.title" type="text" class="w-full p-2 border rounded" required>
+        </div>
+        <div class="mb-4">
+          <label class="block text-gray-700">Date</label>
+          <input v-model="event.date" type="date" class="w-full p-2 border rounded" required>
+        </div>
+        <div class="mb-4">
+          <label class="block text-gray-700">End Date (Optional)</label>
+          <input v-model="event.endDate" type="date" class="w-full p-2 border rounded">
+        </div>
+        <div class="mb-4">
+          <label class="block text-gray-700">Location</label>
+          <input v-model="event.location" type="text" class="w-full p-2 border rounded" required>
+        </div>
+        <div class="mb-4">
+          <label class="block text-gray-700">Total Guests</label>
+          <input v-model.number="event.guests_total" type="number" min="0" class="w-full p-2 border rounded" required>
+        </div>
+        <div class="mb-4">
+          <label class="block text-gray-700">Theme (Optional)</label>
+          <select v-model="event.theme" class="w-full p-2 border rounded">
+            <option value="">None</option>
+            <option value="Elegant">Elegant</option>
+            <option value="Casual">Casual</option>
+            <option value="Themed">Themed</option>
+          </select>
+        </div>
+        <button type="submit" class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-full font-semibold">Create Event</button>
+      </form>
+    </div>
+  </section>
+  <footer class="bg-gray-100 py-8 text-center text-gray-600">
+    <div class="max-w-4xl mx-auto px-4">
+      <div class="flex justify-center items-center mb-4">
+        <span class="text-purple-600 text-xl mr-2">🎉</span>
+        <span class="text-xl font-semibold">Party Planet</span>
+      </div>
+      <p class="mb-2">The ultimate event planning platform</p>
+      <div class="footer-links mb-4">
+        <a href="#" class="hover:text-purple-600">About</a>
+        <a href="#" class="hover:text-purple-600">Pricing</a>
+        <a href="#" class="hover:text-purple-600">Privacy</a>
+        <a href="#" class="hover:text-purple-600">Terms</a>
+      </div>
+      <p class="text-sm">Made with ♥ by Party Planet Team © 2025 Party Planet. All rights reserved.</p>
+    </div>
+  </footer>
+  <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+  <script>
+    new Vue({
+      el: '#createEventForm',
+      data: {
+        event: {
+          title: '',
+          date: '',
+          endDate: '',
+          location: '',
+          guests_total: 0,
+          guests_confirmed: 0,
+          theme: ''
+        }
+      },
+      methods: {
+        createEvent() {
+          if (!this.event.title || !this.event.date || !this.event.location || this.event.guests_total <= 0) {
+            alert('Please fill all required fields correctly.');
+            return;
+          }
+          axios.post('http://localhost:5000/api/events', {
+            title: this.event.title,
+            date: this.event.date,
+            endDate: this.event.endDate,
+            location: this.event.location,
+            guests_total: this.event.guests_total,
+            guests_confirmed: this.event.guests_confirmed,
+            theme: this.event.theme
+          })
+            .then(response => {
+              alert('Event created successfully!');
+              this.event = { title: '', date: '', endDate: '', location: '', guests_total: 0, guests_confirmed: 0, theme: '' };
+              window.location.href = 'Events.html';
+            })
+            .catch(error => {
+              console.error('Error creating event:', error);
+              alert('Failed to create event. Check your backend connection.');
+            });
+        }
+      }
+    });
+  </script>
+</body>
+</html>
